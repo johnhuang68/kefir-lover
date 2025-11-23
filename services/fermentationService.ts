@@ -182,7 +182,7 @@ export const createFerment = async (
     sugar_amount?: number;
     water_volume?: number;
   } = {}
-): Promise<Ferment | null> => {
+): Promise<{ data: Ferment | null, error: string | null }> => {
   // Base Object
   const commonFields = {
     user_id: userId,
@@ -207,10 +207,12 @@ export const createFerment = async (
     };
     const current = getMockData();
     setMockData([entry, ...current]);
-    return entry;
+    return { data: entry, error: null };
   }
 
-  if (!supabase) return null;
+  if (!supabase) return { data: null, error: "Supabase client not initialized" };
+
+  let firstErrorMsg = "";
 
   // Attempt 1: Try inserting normally (assuming columns exist)
   try {
@@ -221,14 +223,16 @@ export const createFerment = async (
         .single();
 
     if (!error && data) {
-        return parseFerment(data);
+        return { data: parseFerment(data), error: null };
     }
     
+    firstErrorMsg = error?.message || "Unknown error";
     // If we are here, there was an error. 
     // It might be because columns (milk_type, etc.) don't exist in the table yet.
-    console.warn("Standard insert failed, attempting fallback...", error?.message);
+    console.warn("Standard insert failed, attempting fallback...", firstErrorMsg);
     
-  } catch (e) {
+  } catch (e: any) {
+    firstErrorMsg = e.message || "Exception";
     console.warn("Exception during insert", e);
   }
 
@@ -253,10 +257,10 @@ export const createFerment = async (
 
   if (retryError) {
     console.error("Fallback insert failed:", retryError?.message);
-    return null;
+    return { data: null, error: retryError.message || firstErrorMsg };
   }
 
-  return parseFerment(retryData);
+  return { data: parseFerment(retryData), error: null };
 };
 
 export const finishFerment = async (id: string): Promise<void> => {
