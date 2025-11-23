@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { IS_DEMO_MODE } from '../constants';
-import { sendLoginOtp, verifyLoginOtp } from '../services/fermentationService';
+import { sendLoginOtp } from '../services/fermentationService';
 import { supabase } from '../services/supabaseClient';
 import { MilkKefirMascot } from '../components/Illustrations';
 import { useTheme } from '../contexts/ThemeContext';
 
 const Login: React.FC = () => {
-  const [step, setStep] = useState<'email' | 'otp'>('email');
+  const [step, setStep] = useState<'email' | 'sent'>('email');
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isVerifyingHash, setIsVerifyingHash] = useState(false);
@@ -52,7 +51,7 @@ const Login: React.FC = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleSendCode = async (e: React.FormEvent) => {
+  const handleSendLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     
@@ -64,8 +63,7 @@ const Login: React.FC = () => {
         if (sendError) {
             setError(sendError);
         } else {
-            setStep('otp');
-            setOtp(''); // Clear previous OTP if any
+            setStep('sent');
         }
     } catch (err: any) {
         setError(err.message || t('login.errorSend'));
@@ -74,25 +72,11 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-        const { error: verifyError } = await verifyLoginOtp(email, otp);
-        if (verifyError) {
-            setError(verifyError);
-        } else {
-            navigate('/dashboard');
-        }
-    } catch (err: any) {
-        setError(err.message || t('login.errorVerify'));
-    } finally {
-        setLoading(false);
-    }
+  const handleDemoSimulation = () => {
+    // Mock login logic manually
+    const fakeUser = { id: 'demo-user-123', email };
+    localStorage.setItem('kefir_lover_mock_user', JSON.stringify(fakeUser));
+    navigate('/dashboard');
   };
 
   if (isVerifyingHash) {
@@ -132,7 +116,7 @@ const Login: React.FC = () => {
             )}
 
             {step === 'email' ? (
-                <form onSubmit={handleSendCode} className="space-y-6 animate-fade-in">
+                <form onSubmit={handleSendLink} className="space-y-6 animate-fade-in">
                     <div>
                         <label className="block text-sm font-bold text-slate-600 mb-2 ml-2">{t('login.emailLabel')}</label>
                         <input
@@ -168,48 +152,32 @@ const Login: React.FC = () => {
                     </p>
                 </form>
             ) : (
-                <form onSubmit={handleVerifyCode} className="space-y-6">
-                    <div className="text-center mb-2">
-                        <span className="inline-block bg-lime-50 text-lime-600 text-xs font-bold px-3 py-1 rounded-full mb-2">
+                <div className="space-y-6 text-center animate-fade-in">
+                    <div className="mb-4">
+                        <div className="w-16 h-16 bg-lime-100 text-lime-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                             <i className="fa-solid fa-envelope text-2xl"></i>
+                        </div>
+                        <span className="inline-block bg-lime-50 text-lime-600 text-xs font-bold px-3 py-1 rounded-full mb-3">
                             {t('login.checkInbox')}
                         </span>
                         <p className="text-slate-500 font-medium text-sm">
-                            {t('login.sentCodeTo')} <br/> <span className="text-slate-800 font-bold">{email}</span>
+                            {t('login.sentCodeTo')} <br/> <span className="text-slate-800 font-bold text-lg">{email}</span>
+                        </p>
+                        <p className="text-slate-400 text-xs mt-4 px-4 leading-relaxed">
+                            {t('login.openEmail')}
                         </p>
                     </div>
 
-                    <div>
-                        <input
-                            type="text"
-                            required
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                            className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-full text-slate-800 placeholder-slate-300 focus:bg-white focus:border-lime-400 focus:ring-4 focus:ring-lime-100 outline-none transition-all font-bold text-2xl text-center tracking-[0.5em]"
-                            placeholder="······"
-                            maxLength={6}
-                            autoFocus
-                        />
-                    </div>
-
-                    {error && (
-                        <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-2xl font-medium">
-                            {error}
-                        </div>
+                    {IS_DEMO_MODE && (
+                        <button
+                            onClick={handleDemoSimulation}
+                            className="w-full bg-amber-400 hover:bg-amber-300 text-white font-bold text-lg py-3 rounded-full shadow-lg shadow-amber-400/30 transition-all"
+                        >
+                            <i className="fa-solid fa-wand-magic-sparkles mr-2"></i> {t('login.demoLink')}
+                        </button>
                     )}
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-lime-500 hover:bg-lime-400 text-white font-bold text-lg py-4 rounded-full shadow-lg shadow-lime-500/30 transition-all transform hover:-translate-y-1 active:translate-y-0 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {loading ? (
-                            <span><i className="fa-solid fa-spinner fa-spin mr-2"></i> {t('login.verifying')}</span>
-                        ) : (
-                            t('login.verifyButton')
-                        )}
-                    </button>
-
-                    <div className="text-center mt-4">
+                    <div className="pt-2">
                          <button 
                             type="button"
                             onClick={() => setStep('email')}
@@ -218,7 +186,7 @@ const Login: React.FC = () => {
                             {t('login.wrongEmail')}
                          </button>
                     </div>
-                </form>
+                </div>
             )}
         </div>
       </div>
