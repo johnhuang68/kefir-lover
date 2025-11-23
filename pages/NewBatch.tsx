@@ -72,7 +72,18 @@ const NewBatch: React.FC = () => {
     if (data && !error) {
         navigate('/dashboard');
     } else {
-        alert(`Failed to create batch: ${error || "Unknown error"}`);
+        // Check for common setup errors to give better feedback
+        let errorMessage = error || "Unknown error";
+        
+        // Detect missing table error
+        if (errorMessage.includes('Could not find the table') || errorMessage.includes('relation "public.ferments" does not exist')) {
+            errorMessage = "Database Setup Required: The 'ferments' table is missing in Supabase.\n\nPlease go to Supabase SQL Editor and run the table creation script.";
+        } else if (errorMessage.includes('row-level security')) {
+            errorMessage = "Permission Denied: Please check your Supabase RLS policies.";
+        }
+
+        console.error("Batch creation failed:", error);
+        alert(`Failed to create batch:\n${errorMessage}`);
     }
   };
 
