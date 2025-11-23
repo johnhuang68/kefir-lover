@@ -41,7 +41,14 @@ export const sendLoginOtp = async (email: string): Promise<{ error?: string }> =
 
   if (!supabase) return { error: "Supabase client not initialized" };
 
-  const { error } = await supabase.auth.signInWithOtp({ email });
+  // We set emailRedirectTo to the current origin (e.g., https://kefir-lover.vercel.app or http://localhost:3000)
+  // This ensures the magic link redirects back to the correct place.
+  const { error } = await supabase.auth.signInWithOtp({ 
+    email,
+    options: {
+      emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+    }
+  });
   if (error) return { error: error.message };
   
   return {};

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IS_DEMO_MODE } from '../constants';
 import { sendLoginOtp, verifyLoginOtp } from '../services/fermentationService';
+import { supabase } from '../services/supabaseClient';
 import { MilkKefirMascot } from '../components/Illustrations';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -13,6 +14,29 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { t } = useTheme();
+
+  // Listen for Magic Link redirects
+  useEffect(() => {
+    if (IS_DEMO_MODE || !supabase) return;
+
+    // 1. Check if user is already logged in or session restored from URL
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/dashboard');
+      }
+    });
+
+    // 2. Listen for auth state changes (e.g. magic link completed)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        navigate('/dashboard');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
