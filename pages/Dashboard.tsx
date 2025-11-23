@@ -4,7 +4,6 @@ import Layout from '../components/Layout';
 import { Card } from '../components/Card';
 import { getFerments, getCurrentUser } from '../services/fermentationService';
 import { Ferment, FermentStatus, KefirType } from '../types';
-import { KEFIR_TYPES } from '../constants';
 import { SleepingMascot, MilkKefirMascot, WaterKefirMascot } from '../components/Illustrations';
 import { useTheme } from '../contexts/ThemeContext';
 

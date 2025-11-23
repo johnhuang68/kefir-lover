@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../services/supabaseClient';
 import { IS_DEMO_MODE } from '../constants';
 import { sendLoginOtp, verifyLoginOtp } from '../services/fermentationService';
 import { MilkKefirMascot } from '../components/Illustrations';
