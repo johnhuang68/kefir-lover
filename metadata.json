@@ -1,0 +1,5 @@
+{
+  "name": "Kefir Lover",
+  "description": "A fermentation tracking application for Milk and Water Kefir enthusiasts. Track batches, monitor fermentation times, and maintain a history of your brews.",
+  "requestFramePermissions": []
+}
