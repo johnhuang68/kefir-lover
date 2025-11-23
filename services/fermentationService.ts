@@ -47,6 +47,14 @@ const parseFerment = (f: any): Ferment => {
   };
 };
 
+// --- Helper: Clean Undefined Values ---
+// Removes keys with undefined values to prevent Supabase errors during insert
+const cleanUndefined = (obj: any) => {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, v]) => v !== undefined)
+  );
+};
+
 // --- Auth Services ---
 
 export const getCurrentUser = async (): Promise<User | null> => {
@@ -184,15 +192,16 @@ export const createFerment = async (
     status: FermentStatus.FERMENTING,
   };
 
-  const fullObject = {
+  // Clean undefined values from details before merging
+  const fullObject = cleanUndefined({
     ...commonFields,
     notes,
     ...details
-  };
+  });
 
   if (IS_DEMO_MODE) {
     const entry: Ferment = {
-      ...fullObject as Ferment,
+      ...(fullObject as any),
       id: crypto.randomUUID(),
       created_at: new Date().toISOString(),
     };
@@ -217,7 +226,6 @@ export const createFerment = async (
     
     // If we are here, there was an error. 
     // It might be because columns (milk_type, etc.) don't exist in the table yet.
-    // Fixed: Added optional chaining (error?.message) to prevent TS18047
     console.warn("Standard insert failed, attempting fallback...", error?.message);
     
   } catch (e) {
@@ -228,14 +236,14 @@ export const createFerment = async (
   // Package the details into the 'notes' field string
   const fallbackNotes = '__DETAILS_JSON__' + JSON.stringify({
     originalNotes: notes,
-    details: details
+    details: cleanUndefined(details)
   });
 
-  const fallbackObject = {
+  const fallbackObject = cleanUndefined({
     ...commonFields,
     notes: fallbackNotes
     // We intentionally DO NOT include the ...details here so the DB doesn't reject them
-  };
+  });
 
   const { data: retryData, error: retryError } = await supabase
     .from('ferments')

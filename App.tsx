@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -10,7 +10,7 @@ import Settings from './pages/Settings';
 const App: React.FC = () => {
   return (
     <ThemeProvider>
-      <HashRouter>
+      <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
@@ -19,7 +19,7 @@ const App: React.FC = () => {
           <Route path="/settings" element={<Settings />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-      </HashRouter>
+      </BrowserRouter>
     </ThemeProvider>
   );
 };
