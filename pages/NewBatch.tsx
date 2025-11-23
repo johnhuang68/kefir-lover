@@ -65,9 +65,15 @@ const NewBatch: React.FC = () => {
       water_volume: type === KefirType.WATER_KEFIR && waterVolume !== '' ? Number(waterVolume) : undefined,
     };
 
-    await createFerment(userId, type, targetHours, notes, details);
+    const result = await createFerment(userId, type, targetHours, notes, details);
+    
     setLoading(false);
-    navigate('/dashboard');
+    
+    if (result) {
+        navigate('/dashboard');
+    } else {
+        alert("Failed to create batch. Please try again or check your connection.");
+    }
   };
 
   const isMilk = type === KefirType.MILK_KEFIR;

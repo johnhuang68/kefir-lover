@@ -15,6 +15,38 @@ const setMockData = (data: Ferment[]) => {
   localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(data));
 };
 
+// --- Helper: Parse Ferment Data (Handle Fallback Storage) ---
+// If columns like milk_type are missing in DB, we store them in 'notes' as a JSON string.
+// This function unpacks them so the UI doesn't know the difference.
+const parseFerment = (f: any): Ferment => {
+  if (!f) return f;
+  let details: any = {};
+  let cleanNotes = f.notes || '';
+
+  // Check for our special fallback marker
+  if (typeof f.notes === 'string' && f.notes.startsWith('__DETAILS_JSON__')) {
+    try {
+      const jsonStr = f.notes.replace('__DETAILS_JSON__', '');
+      const parsed = JSON.parse(jsonStr);
+      details = parsed.details || {};
+      cleanNotes = parsed.originalNotes || "";
+    } catch (e) {
+      console.error("Error parsing fallback notes", e);
+    }
+  }
+
+  return {
+    ...f,
+    notes: cleanNotes,
+    // If the specific column is null/undefined, try to grab it from the parsed details
+    milk_type: f.milk_type || details.milk_type,
+    milk_volume: f.milk_volume || details.milk_volume,
+    sugar_type: f.sugar_type || details.sugar_type,
+    sugar_amount: f.sugar_amount || details.sugar_amount,
+    water_volume: f.water_volume || details.water_volume,
+  };
+};
+
 // --- Auth Services ---
 
 export const getCurrentUser = async (): Promise<User | null> => {
@@ -109,7 +141,8 @@ export const getFerments = async (userId: string): Promise<Ferment[]> => {
     console.error('Error fetching ferments:', error);
     return [];
   }
-  return data as Ferment[];
+  // Parse each item to handle potential fallback data
+  return (data as any[]).map(parseFerment);
 };
 
 export const getFermentById = async (id: string): Promise<Ferment | null> => {
@@ -126,7 +159,7 @@ export const getFermentById = async (id: string): Promise<Ferment | null> => {
     .single();
 
   if (error) return null;
-  return data as Ferment;
+  return parseFerment(data);
 };
 
 export const createFerment = async (
@@ -142,19 +175,24 @@ export const createFerment = async (
     water_volume?: number;
   } = {}
 ): Promise<Ferment | null> => {
-  const newFerment: Partial<Ferment> = {
+  // Base Object
+  const commonFields = {
     user_id: userId,
     type,
     target_hours: targetHours,
-    notes,
     start_time: new Date().toISOString(),
     status: FermentStatus.FERMENTING,
+  };
+
+  const fullObject = {
+    ...commonFields,
+    notes,
     ...details
   };
 
   if (IS_DEMO_MODE) {
     const entry: Ferment = {
-      ...newFerment as Ferment,
+      ...fullObject as Ferment,
       id: crypto.randomUUID(),
       created_at: new Date().toISOString(),
     };
@@ -165,17 +203,51 @@ export const createFerment = async (
 
   if (!supabase) return null;
 
-  const { data, error } = await supabase
+  // Attempt 1: Try inserting normally (assuming columns exist)
+  try {
+    const { data, error } = await supabase
+        .from('ferments')
+        .insert(fullObject)
+        .select()
+        .single();
+
+    if (!error && data) {
+        return parseFerment(data);
+    }
+    
+    // If we are here, there was an error. 
+    // It might be because columns (milk_type, etc.) don't exist in the table yet.
+    console.warn("Standard insert failed, attempting fallback...", error.message);
+    
+  } catch (e) {
+    console.warn("Exception during insert", e);
+  }
+
+  // Attempt 2: Fallback Strategy
+  // Package the details into the 'notes' field string
+  const fallbackNotes = '__DETAILS_JSON__' + JSON.stringify({
+    originalNotes: notes,
+    details: details
+  });
+
+  const fallbackObject = {
+    ...commonFields,
+    notes: fallbackNotes
+    // We intentionally DO NOT include the ...details here so the DB doesn't reject them
+  };
+
+  const { data: retryData, error: retryError } = await supabase
     .from('ferments')
-    .insert(newFerment)
+    .insert(fallbackObject)
     .select()
     .single();
 
-  if (error) {
-    console.error(error);
+  if (retryError) {
+    console.error("Fallback insert failed:", retryError);
     return null;
   }
-  return data as Ferment;
+
+  return parseFerment(retryData);
 };
 
 export const finishFerment = async (id: string): Promise<void> => {
@@ -235,10 +307,6 @@ export const archiveFerment = async (id: string): Promise<void> => {
 };
 
 export const extendFerment = async (id: string, additionalHours: number): Promise<void> => {
-  // We need to fetch current target first to add to it, 
-  // but for optimization we can just assume the caller passes the new total 
-  // or we do a stored procedure. For simplicity here:
-  
   const ferment = await getFermentById(id);
   if (!ferment) return;
   
