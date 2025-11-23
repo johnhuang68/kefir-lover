@@ -4,7 +4,7 @@
 
 body {
   background-color: #faeee7;
-  font-family: 'Quicksand', 'Prompt', sans-serif;
+  font-family: 'Quicksand', 'Prompt', 'Noto Sans TC', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

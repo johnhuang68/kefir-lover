@@ -31,7 +31,7 @@ const Settings: React.FC = () => {
         
         {/* Language Section */}
         <Card title={t('settings.language.title')}>
-           <div className="grid grid-cols-2 gap-3">
+           <div className="grid grid-cols-1 gap-3">
               <button
                 onClick={() => setLanguage('en')}
                 className={`py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center transition-all ${language === 'en' ? 'bg-lime-50 text-lime-600 ring-2 ring-lime-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
@@ -43,6 +43,12 @@ const Settings: React.FC = () => {
                 className={`py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center transition-all ${language === 'th' ? 'bg-lime-50 text-lime-600 ring-2 ring-lime-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
               >
                 <span className="text-xl mr-2">🇹🇭</span> {t('settings.language.thai')}
+              </button>
+              <button
+                onClick={() => setLanguage('zh-TW')}
+                className={`py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center transition-all ${language === 'zh-TW' ? 'bg-lime-50 text-lime-600 ring-2 ring-lime-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+              >
+                <span className="text-xl mr-2">🇹🇼</span> {t('settings.language.zhTW')}
               </button>
            </div>
         </Card>

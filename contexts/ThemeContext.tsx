@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { translations } from '../constants/translations';
 
 type TextSize = 'sm' | 'md' | 'lg' | 'xl';
-type Language = 'en' | 'th';
+type Language = 'en' | 'th' | 'zh-TW';
 
 interface ThemeContextType {
   textSize: TextSize;
@@ -84,11 +84,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [textSize]);
 
-  // Apply font family based on language (Thai needs Prompt)
+  // Apply font family based on language
   useEffect(() => {
-    document.body.style.fontFamily = language === 'th' 
-      ? '"Prompt", "Quicksand", sans-serif' 
-      : '"Quicksand", sans-serif';
+    const root = document.body;
+    if (language === 'th') {
+      root.style.fontFamily = '"Prompt", "Quicksand", sans-serif';
+    } else if (language === 'zh-TW') {
+      root.style.fontFamily = '"Noto Sans TC", "Quicksand", sans-serif';
+    } else {
+      root.style.fontFamily = '"Quicksand", sans-serif';
+    }
   }, [language]);
 
   return (

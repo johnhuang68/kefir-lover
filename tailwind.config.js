@@ -10,7 +10,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Quicksand', 'Prompt', 'sans-serif'],
+        sans: ['Quicksand', 'Prompt', 'Noto Sans TC', 'sans-serif'],
       },
       colors: {
         milk: {
