@@ -81,12 +81,12 @@ export const sendLoginOtp = async (email: string): Promise<{ error?: string }> =
 
   if (!supabase) return { error: "Supabase client not initialized" };
 
-  // We set emailRedirectTo to the current origin (e.g., https://kefir-lover.vercel.app or http://localhost:3000)
-  // This ensures the magic link redirects back to the correct place.
+  // We set emailRedirectTo to the current origin + /login (e.g., https://kefir-lover.vercel.app/login)
+  // This ensures the magic link redirects explicitly to the login page where the hash handler exists.
   const { error } = await supabase.auth.signInWithOtp({ 
     email,
     options: {
-      emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined
+      emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined
     }
   });
   if (error) return { error: error.message };
@@ -252,7 +252,7 @@ export const createFerment = async (
     .single();
 
   if (retryError) {
-    console.error("Fallback insert failed:", retryError);
+    console.error("Fallback insert failed:", retryError?.message);
     return null;
   }
 

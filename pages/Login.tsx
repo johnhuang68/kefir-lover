@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { IS_DEMO_MODE } from '../constants';
 import { sendLoginOtp, verifyLoginOtp } from '../services/fermentationService';
 import { supabase } from '../services/supabaseClient';
@@ -12,14 +12,24 @@ const Login: React.FC = () => {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isVerifyingHash, setIsVerifyingHash] = useState(false);
+  
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTheme();
 
-  // Listen for Magic Link redirects
+  // Detect Magic Link hash immediately on mount
+  useEffect(() => {
+    if (location.hash && location.hash.includes('access_token')) {
+      setIsVerifyingHash(true);
+    }
+  }, [location]);
+
+  // Listen for Magic Link redirects and auth state changes
   useEffect(() => {
     if (IS_DEMO_MODE || !supabase) return;
 
-    // 1. Check if user is already logged in or session restored from URL
+    // 1. Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate('/dashboard');
@@ -29,9 +39,13 @@ const Login: React.FC = () => {
     // 2. Listen for auth state changes (e.g. magic link completed)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         navigate('/dashboard');
+      }
+      // If sign-in failed (e.g. link expired)
+      if (event === 'SIGNED_OUT') {
+        setIsVerifyingHash(false);
       }
     });
 
@@ -80,6 +94,18 @@ const Login: React.FC = () => {
         setLoading(false);
     }
   };
+
+  if (isVerifyingHash) {
+    return (
+        <div className="min-h-screen bg-[#faeee7] flex items-center justify-center p-4">
+            <div className="text-center">
+                 <i className="fa-solid fa-circle-notch fa-spin text-4xl text-lime-500 mb-4"></i>
+                 <h2 className="text-xl font-bold text-slate-700">{t('login.verifying')}</h2>
+                 <p className="text-slate-400 text-sm mt-2">Authenticating your magic link...</p>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#faeee7] flex items-center justify-center p-4">
