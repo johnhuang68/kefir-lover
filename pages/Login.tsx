@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { IS_DEMO_MODE } from '../constants';
 import { sendLoginOtp } from '../services/fermentationService';
 import { supabase } from '../services/supabaseClient';
-import { MilkKefirMascot } from '../components/Illustrations';
+import { KefirGirlLogo } from '../components/Illustrations';
 import { useTheme } from '../contexts/ThemeContext';
 
 const Login: React.FC = () => {
@@ -96,8 +96,8 @@ const Login: React.FC = () => {
       <div className="w-full max-w-md">
         
         <div className="text-center mb-8">
-            <div className="w-40 h-40 mx-auto bg-lime-100 rounded-full flex items-center justify-center mb-4 relative overflow-hidden ring-8 ring-lime-50">
-                <MilkKefirMascot className="w-32 h-32 relative top-2" />
+            <div className="w-48 h-48 mx-auto mb-4 relative hover:scale-105 transition-transform duration-500 cursor-pointer">
+                <KefirGirlLogo className="w-full h-full drop-shadow-2xl" />
             </div>
             <h1 className="text-4xl font-bold text-slate-800 tracking-tight mb-2">{t('login.title')}</h1>
             <p className="text-slate-400 font-medium">{t('login.subtitle')}</p>

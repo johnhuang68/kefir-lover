@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { signOut } from '../services/fermentationService';
 import { IS_DEMO_MODE } from '../constants';
 import { useTheme } from '../contexts/ThemeContext';
+import { KefirGirlLogo } from './Illustrations';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,8 +28,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center cursor-pointer group" onClick={() => navigate('/dashboard')}>
-              <div className="w-10 h-10 bg-lime-400 rounded-2xl flex items-center justify-center text-white mr-3 shadow-lg shadow-lime-200 transform group-hover:scale-110 transition-transform duration-300">
-                <i className="fa-solid fa-face-smile"></i>
+              <div className="w-11 h-11 mr-3 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">
+                <KefirGirlLogo className="w-full h-full" />
               </div>
               <span className="font-bold text-xl tracking-tight text-slate-700 group-hover:text-lime-600 transition-colors">{t('nav.home')}</span>
             </div>
