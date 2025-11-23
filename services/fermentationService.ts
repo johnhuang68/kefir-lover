@@ -217,7 +217,8 @@ export const createFerment = async (
     
     // If we are here, there was an error. 
     // It might be because columns (milk_type, etc.) don't exist in the table yet.
-    console.warn("Standard insert failed, attempting fallback...", error.message);
+    // Fixed: Added optional chaining (error?.message) to prevent TS18047
+    console.warn("Standard insert failed, attempting fallback...", error?.message);
     
   } catch (e) {
     console.warn("Exception during insert", e);
