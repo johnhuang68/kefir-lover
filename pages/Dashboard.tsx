@@ -125,9 +125,12 @@ const Dashboard: React.FC = () => {
                            <i className="fa-solid fa-bell mr-1"></i> {t('dashboard.ready')}
                          </span>
                     ) : (
-                        <span className="text-xs font-bold text-lime-600 bg-lime-50 px-3 py-1 rounded-full animate-pulse-fast border border-lime-100">
-                           {t('dashboard.inProgress')}
-                        </span>
+                        <div className="flex items-center space-x-1.5 bg-lime-50 px-3 py-1 rounded-full border border-lime-100">
+                            <div className="w-2 h-2 rounded-full bg-lime-500 animate-pulse-fast shadow-[0_0_8px_rgba(132,204,22,0.6)]"></div>
+                            <span className="text-xs font-bold text-lime-600">
+                               {t('dashboard.inProgress')}
+                            </span>
+                        </div>
                     )}
                   </div>
 
@@ -138,10 +141,10 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner mb-4">
                         <div 
-                            className={`h-4 rounded-full transition-all duration-1000 ease-out ${isOverdue ? 'bg-lime-400' : 'bg-lime-400'}`} 
+                            className={`h-4 rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${isOverdue ? 'bg-lime-400' : 'bg-lime-400'}`} 
                             style={{ width: `${percent}%` }}
                         >
-                             <div className="w-full h-full bg-[linear-gradient(45deg,rgba(255,255,255,0.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.2)_50%,rgba(255,255,255,0.2)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] opacity-50"></div>
+                             <div className="w-full h-full absolute top-0 left-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.4)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.4)_50%,rgba(255,255,255,0.4)_75%,transparent_75%,transparent)] bg-[length:40px_40px] opacity-30 animate-shimmer"></div>
                         </div>
                     </div>
                     
