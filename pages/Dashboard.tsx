@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
                     ) : (
                         <div className="flex items-center space-x-1.5 bg-lime-50 px-3 py-1 rounded-full border border-lime-100">
                             <div className="w-2 h-2 rounded-full bg-lime-500 animate-pulse-fast shadow-[0_0_8px_rgba(132,204,22,0.6)]"></div>
-                            <span className="text-xs font-bold text-lime-600">
+                            <span className="text-xs font-bold text-lime-600 animate-pulse-fast">
                                {t('dashboard.inProgress')}
                             </span>
                         </div>
